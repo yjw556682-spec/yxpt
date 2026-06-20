@@ -1,0 +1,21 @@
+{
+  "name": "yxpt",
+  "version": "0.0.0",
+  "private": true,
+  "description": "yxpt — AI-agent battle platform (monorepo skeleton)",
+  "packageManager": "pnpm@11.5.0",
+  "engines": {
+    "node": ">=22 <26"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "tsc -b && (cd packages/web && node node_modules/vite/bin/vite.js build)"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "@yxpt/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "@yxpt/engine": "workspace:*",
+    "@yxpt/shared-types": "workspace:*",
+    "fastify": "^5.2.1",
+    "postgres": "^3.4.5"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "vitest": "^2.1.8"
+  }
+}

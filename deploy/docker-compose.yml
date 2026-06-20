@@ -1,0 +1,63 @@
+# docker-compose.yml — yxpt production stack
+#
+# Two services on a dedicated bridge network:
+#   - api:  the Fastify server (@yxpt/server), built from packages/server/Dockerfile
+#   - db:   Postgres 16 (alpine), private to the api container
+#
+# Postgres is NOT published to the host — the api container talks to it via
+# the internal docker DNS name `db` on port 5432. Only the api's port 3000
+# is published.
+#
+# Run from the repo root:
+#   cp deploy/.env.example deploy/.env  && edit it
+#   docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: packages/server/Dockerfile
+    image: yxpt-server:latest
+    container_name: yxpt-api
+    restart: always
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3000}
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      LOG_LEVEL: info
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks:
+      - yxpt-net
+
+  db:
+    image: postgres:16-alpine
+    container_name: yxpt-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # No host port mapping — only the api container can reach this.
+    networks:
+      - yxpt-net
+
+volumes:
+  pgdata:
+    name: yxpt-pgdata
+
+networks:
+  yxpt-net:
+    name: yxpt-net
+    driver: bridge

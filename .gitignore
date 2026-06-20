@@ -1,0 +1,47 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+*.tsbuildinfo
+.tsbuildinfo
+
+# environment files (NEVER commit)
+.env
+.env.local
+.env.*.local
+deploy/.env
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# test / coverage
+coverage/
+.vitest-cache/
+.nyc_output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Claude / agent temp files
+.claude/
+.cursor/
+
+# vite / vitepress
+.vite/
+
+# local probe / smoke scripts
+probe*.mjs
+probe*.py
+smoke.mjs
+e2e*.py
+*.local

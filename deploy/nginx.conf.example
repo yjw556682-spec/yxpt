@@ -1,0 +1,56 @@
+# nginx.conf.example — reverse proxy for yxpt
+#
+# Layout assumed:
+#   - Web bundle (packages/web/dist from `pnpm --filter @yxpt/web build`) is
+#     served as static files from /var/www/yxpt-web
+#   - The API container listens on 127.0.0.1:3000 (see deploy/docker-compose.yml)
+#
+# Place this at /etc/nginx/sites-available/yxpt, symlink to sites-enabled,
+# then `nginx -t && systemctl reload nginx`.
+#
+# For HTTPS, prefer the Caddyfile at deploy/Caddyfile (auto-HTTPS via Let's
+# Encrypt) OR put Cloudflare in front of this server and use their Origin
+# Certificate (no need to manage certs at all).
+
+server {
+    listen 80;
+    server_name your-domain.example.com;
+
+    # ACME http-01 challenge for Caddy/Let's Encrypt
+    location /.well-known/acme-challenge/ {
+        root /var/www/letsencrypt;
+    }
+
+    # Static web bundle
+    root /var/www/yxpt-web;
+    index index.html;
+
+    # SPA fallback — React Router uses BrowserRouter, so unknown paths
+    # should resolve to index.html
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Long-cache hashed assets emitted by Vite under /assets
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # Proxy API + matches to the api container
+    location /api/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 30s;
+    }
+
+    # Optional: gzip text responses
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript application/xml;
+    gzip_min_length 1024;
+}
