@@ -28,6 +28,12 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Build packages (engine + server expose dist/ via package.json exports)
+        # engine/server have package.json "exports" pointing to dist/, so
+        # server/web tests need engine's dist/ to exist. Build the whole
+        # workspace once before running tests.
+        run: pnpm -r build
+
       - name: Test
         run: pnpm test --run
 
